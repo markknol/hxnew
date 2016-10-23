@@ -1,5 +1,5 @@
 @echo off
 cd bin
-neko haxeproj.n -name MyProject1
-neko haxeproj.n -name MyProject2 -target neko -target nodejs -target js -pack my.project -cp ../../issue -lib hxargs -include baseproject
+haxelib run haxeproj -name MyProject1
+haxelib run haxeproj -name MyProject2 -target neko -target nodejs -target js -pack my.project -cp ../../issue -lib hxargs -include baseproject
 pause

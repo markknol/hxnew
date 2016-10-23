@@ -1,4 +1,5 @@
 package;
+import haxe.io.Path;
 import hxargs.Args;
 import sys.FileSystem;
 import sys.io.File;
@@ -45,7 +46,8 @@ class Main
 			@doc("Don't generate a Main.hx file")
 			["--no-main"] => function() project.doCreateMainClass = false,
 			
-			_ => function(arg:String) { throw 'unknown command $arg'; }
+			_ => function(value:String) if (FileSystem.isDirectory(value)) project.curPath = value 
+																	else throw 'Cannot parse arg $value',
 		]);
 
 		var args = Sys.args();
@@ -66,7 +68,8 @@ class Project
 	public var name:String = "MyProject";
 	public var binPath:String = "bin";
 	public var srcPath:String = "src";
-	public var classPath:String = null;
+	public var curPath:String;
+	public var classPath:String = "";
 	public var outPath:String = null;
 	
 	public var doCreateMainClass:Bool = true;
@@ -81,15 +84,22 @@ class Project
 	}
 	
 	public function create() {
-		if (outPath == null || outPath.length == 0) outPath = '$name/';
+		if (outPath == null || outPath.length == 0) outPath = curPath + '$name/';
+		else outPath = curPath + outPath;
+		outPath = Path.normalize(outPath);
+		
 		if (!outPath.endsWith("/")) outPath += "/";
 		if (!binPath.endsWith("/")) binPath += "/";
 		if (!srcPath.endsWith("/")) srcPath += "/";
+		if (!curPath.endsWith("/")) curPath += "/";
+		
+		if (targets.length == 0) targets.push(DEFAULT_TARGET);
 		
 		createOutPath();
 		createBinPath();
 		createPack();
 		createMainClass();
+		
 		createBuildFiles();
 		createRunFiles();
 		createInstallFiles();
@@ -98,7 +108,7 @@ class Project
 			includeDirectory(path);
 		}
 		
-		trace("project created: " + Std.string(this));
+		Sys.println("Project created: " + outPath);
 	}
 	
 	private function createOutPath() {
@@ -107,8 +117,8 @@ class Project
 	
 	private function createMainClass() {
 		if (doCreateMainClass) {
-			var main = File.getContent('template/Main.hx');
-			main = main.replace("$classPath", classPath);
+			var main = File.getContent(Sys.getCwd() + '/template/src/Main.hx');
+			main = replaceVars(main);
 			var classPathDir = classPath != null ? classPath.replace(".", "/") : "";
 			File.saveContent(outPath + srcPath + classPathDir + "/Main.hx", main);
 		}
@@ -128,10 +138,26 @@ class Project
 	
 	private function createBinPath() {
 		FileSystem.createDirectory(outPath + binPath);
+		for (target in targets) switch(target) {
+			case "js": 
+				// copy index.html
+				File.saveContent(outPath + binPath + "/index.html", replaceVars(File.getContent(Sys.getCwd() + '/template/bin/index.html')));
+			default: 
+		}
+	}
+	
+	private function replaceVars(value:String) {
+		return value
+			.replace("$outPath", outPath)
+			.replace("$binPath", binPath)
+			.replace("$srcPath", srcPath)
+			.replace("$curPath", curPath)
+			.replace("$classPath", classPath)
+			.replace("$name", name);
 	}
 	
 	private function createPack() {
-		if (classPath != null) {
+		if (classPath == "") {
 			if (classPath.endsWith(".")) classPath = classPath.substr(0, classPath.length - 1);
 			FileSystem.createDirectory(outPath + srcPath + classPath.replace(".", "/") + "/");
 		} else {
@@ -139,20 +165,7 @@ class Project
 		}
 	}
 	
-	private function getOutputPath(target:String) {
-		var extension = switch(target) {
-			case "js","nodejs": ".js";
-			case "python": ".py";
-			case "neko": ".n";
-			case "hl": ".hl";
-			case "java": ".jar";
-			default: "";
-		}
-		return 'bin/$name$extension';
-	}
-	
 	private function createBuildFiles() {
-		if (targets.length == 0) targets.push(DEFAULT_TARGET);
 		if (targets.length == 1) {
 			createBuildFile(targets[0], 'build.hxml');
 		} else {
@@ -164,7 +177,7 @@ class Project
 	
 	private function createBuildFile(target:String, file:String) {
 		var hxml = '';
-		var pack = classPath != null ? classPath + "." : "";
+		var pack = classPath == "" ? classPath + "." : "";
 		if (doCreateMainClass) hxml += '-main ${pack}Main' + NEWLINE;
 		hxml += '-cp $srcPath' + NEWLINE;
 		for(cp in classPaths) hxml += '-cp $cp' + NEWLINE;
@@ -191,6 +204,18 @@ class Project
 				}
 			}
 		}
+	}
+	
+	private function getOutputPath(target:String) {
+		var extension = switch(target) {
+			case "js","nodejs": ".js";
+			case "python": ".py";
+			case "neko": ".n";
+			case "hl": ".hl";
+			case "java": ".jar";
+			default: "";
+		}
+		return binPath + '/$name$extension';
 	}
 	
 	private function createRunFile(target:String, file:String) {

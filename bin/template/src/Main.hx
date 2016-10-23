@@ -1,11 +1,9 @@
 package $classPath;
-import $classPath.Main;
 
 /**
- * @author Mark Knol
- */
-class Main
-{
+	@author $author
+**/
+class Main {
 	public static function main() {
 		new Main();
 	}
