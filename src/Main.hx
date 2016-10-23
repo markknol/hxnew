@@ -16,8 +16,8 @@ class Main
 	{
 		var project = new Project();
 		var argHandler = hxargs.Args.generate([
-			@doc("Name of the project. default: 'MyProject'")
-			["-name"] => function(name:String) {
+			@doc("Name of the project. required")
+			["-name", "-n"] => function(name:String) {
 				var path = name.split(".");
 				project.name = path.pop();
 				if (path.length > 0) project.classPath = path.join(".");
@@ -41,7 +41,7 @@ class Main
 			@doc("Libs used in the project")
 			["-lib"] => function(lib:String) project.libs.push(lib),
 			
-			@doc("Target language. Default: 'js'")
+			@doc("Target languages, comma separate. Default: 'js'")
 			["-target", "-t"] => function(targets:String) for(target in targets.split(",")) project.targets.push(target),
 			
 			@doc("Package of the entry point")
@@ -60,7 +60,11 @@ class Main
 			Sys.println(argHandler.getDoc());
 		} else  {
 			argHandler.parse(args);
-			project.create();
+			if (project.name != null) {
+				project.create();
+			} else {
+				Sys.println(argHandler.getDoc());
+			}
 		}
 	}
 }
@@ -70,12 +74,12 @@ class Project
 	static inline var DEFAULT_TARGET:String = "js";
 	static inline var NEWLINE:String = "\n";
 	
-	public var name:String = "MyProject";
+	public var name:String;
 	public var binPath:String = "bin";
 	public var srcPath:String = "src";
 	public var curPath:String;
 	public var classPath:String = "";
-	public var outPath:String = null;
+	public var outPath:String;
 	
 	public var doCreateMainClass:Bool = true;
 	
