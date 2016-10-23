@@ -17,10 +17,14 @@ class Main
 		var project = new Project();
 		var argHandler = hxargs.Args.generate([
 			@doc("Name of the project. default: 'MyProject'")
-			["-name"] => function(name:String) project.name = name,
+			["-name"] => function(name:String) {
+				var path = name.split(".");
+				project.name = path.pop();
+				if (path.length > 0) project.classPath = path.join(".");
+			},
 			
 			@doc("Folder to include in project")
-			["-include"] => function(path:String) project.includes.push(path),
+			["-include", "-i"] => function(path:String) project.includes.push(path),
 			
 			@doc("Project out folder. default: same as name")
 			["-out"] => function(path:String) project.outPath = path,
@@ -38,7 +42,7 @@ class Main
 			["-lib"] => function(lib:String) project.libs.push(lib),
 			
 			@doc("Target language. Default: 'js'")
-			["-target"] => function(target:String) project.targets.push(target),
+			["-target", "-t"] => function(targets:String) for(target in targets.split(",")) project.targets.push(target),
 			
 			@doc("Package of the entry point")
 			["-pack"] => function(classPath:String) project.classPath = classPath,
@@ -46,8 +50,9 @@ class Main
 			@doc("Don't generate a Main.hx file")
 			["--no-main"] => function() project.doCreateMainClass = false,
 			
-			_ => function(value:String) if (FileSystem.isDirectory(value)) project.curPath = value 
-																	else throw 'Cannot parse arg $value',
+			_ => function(value:String) 
+				if (FileSystem.isDirectory(value)) project.curPath = value 
+				else throw 'Cannot parse arg $value',
 		]);
 
 		var args = Sys.args();
@@ -119,7 +124,7 @@ class Project
 		if (doCreateMainClass) {
 			var main = File.getContent(Sys.getCwd() + '/template/src/Main.hx');
 			main = replaceVars(main);
-			var classPathDir = classPath != null ? classPath.replace(".", "/") : "";
+			var classPathDir = classPath != "" ? classPath.replace(".", "/") : "";
 			File.saveContent(outPath + srcPath + classPathDir + "/Main.hx", main);
 		}
 	}
@@ -157,7 +162,7 @@ class Project
 	}
 	
 	private function createPack() {
-		if (classPath == "") {
+		if (classPath != "") {
 			if (classPath.endsWith(".")) classPath = classPath.substr(0, classPath.length - 1);
 			FileSystem.createDirectory(outPath + srcPath + classPath.replace(".", "/") + "/");
 		} else {
