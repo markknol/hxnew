@@ -50,6 +50,9 @@ class Main
 			@doc("Don't generate a Main.hx file")
 			["--no-main"] => function() project.doCreateMainClass = false,
 			
+			@doc("Don't generate a makefile")
+			["--no-makefile"] => function() project.doCreateMakeFile = false,
+			
 			_ => function(value:String) 
 				if (FileSystem.isDirectory(value)) project.curPath = value 
 				else throw 'Cannot parse arg $value',
@@ -82,6 +85,7 @@ class Project
 	public var outPath:String;
 	
 	public var doCreateMainClass:Bool = true;
+	public var doCreateMakeFile:Bool = true;
 	
 	public var includes:Array<String> = [];
 	public var libs:Array<String> = [];
@@ -112,6 +116,7 @@ class Project
 		createBuildFiles();
 		createRunFiles();
 		createInstallFiles();
+		createMakeFile();
 		
 		for (path in includes) {
 			includeDirectory(path);
@@ -143,6 +148,42 @@ class Project
 				File.saveContent(outPath + "install.hxml", "-cmd haxelib install build.hxml");
 			}
 		}
+	}
+	
+	private function createMakeFile() {
+		var makefile = "";
+		makefile += 'clean:' + NEWLINE;
+		makefile += '    rm $binPath' + NEWLINE;
+		makefile += NEWLINE;
+		
+		if (targets.length > 1) {
+			for (target in targets) {
+				makefile += 'test-${target}:' + NEWLINE;
+				makefile += '    haxe build-$target.hxml' + NEWLINE;
+				var command = getRunCommand(target);
+				if (command != null) makefile += '    $command' + NEWLINE;
+				makefile += NEWLINE;
+			} 
+		} else {
+			var target = targets[0];
+			makefile += 'test:' + NEWLINE;
+			makefile += '    haxe build.hxml' + NEWLINE;
+			var command = getRunCommand(target);
+			if (command != null) makefile += '    $command' + NEWLINE;
+			makefile += NEWLINE;
+		}
+		
+		if (libs.length > 0) {
+			makefile += 'install:' + NEWLINE;
+			if (targets.length > 1) {
+				for (target in targets) makefile += '    haxelib install build-${target}.hxml' + NEWLINE;
+			} else {
+				makefile += '    haxelib install build.hxml' + NEWLINE;
+			}
+			makefile += NEWLINE;
+		}
+		
+		File.saveContent(outPath + "makefile", makefile);
 	}
 	
 	private function createBinPath() {
@@ -219,6 +260,8 @@ class Project
 		var extension = switch(target) {
 			case "js","nodejs": ".js";
 			case "python": ".py";
+			case "swf": ".swf";
+			case "lua": ".lua";
 			case "neko": ".n";
 			case "hl": ".hl";
 			case "java": ".jar";
@@ -229,8 +272,16 @@ class Project
 	
 	private function createRunFile(target:String, file:String) {
 		var hxml = '';
+		var command = getRunCommand(target);
+		if (command != null) {
+			hxml += '-cmd $command' + NEWLINE;
+			File.saveContent(outPath + file, hxml);
+		}
+	}
+	
+	private function getRunCommand(target:String) {
 		var outputPath = getOutputPath(target);
-		var command = switch(target) {
+		return switch(target) {
 			case "nodejs": 'node $outputPath';
 			case "python": 'python $outputPath';
 			case "neko": 'neko $outputPath';
@@ -239,11 +290,6 @@ class Project
 			case "java": 'java -jar $outputPath';
 			case "cs": '$outputPath.exe';
 			default: null;
-		}
-		
-		if (command != null) {
-			hxml += '-cmd $command' + NEWLINE;
-			File.saveContent(outPath + file, hxml);
 		}
 	}
 	
