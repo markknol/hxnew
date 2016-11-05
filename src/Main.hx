@@ -150,7 +150,7 @@ class Project
 		for (target in targets) switch(target) {
 			case "js": 
 				// copy index.html
-				File.saveContent(outPath + binPath + "/index.html", replaceVars(File.getContent(Sys.getCwd() + '/template/bin/index.html')));
+				File.saveContent(outPath + binPath + "index.html", replaceVars(File.getContent(Sys.getCwd() + '/template/bin/index.html')));
 			default: 
 		}
 	}
@@ -186,7 +186,7 @@ class Project
 	
 	private function createBuildFile(target:String, file:String) {
 		var hxml = '';
-		var pack = classPath == "" ? classPath + "." : "";
+		var pack = classPath != "" ? classPath + "." : "";
 		if (doCreateMainClass) hxml += '-main ${pack}Main' + NEWLINE;
 		hxml += '-cp $srcPath' + NEWLINE;
 		for(cp in classPaths) hxml += '-cp $cp' + NEWLINE;
@@ -224,7 +224,7 @@ class Project
 			case "java": ".jar";
 			default: "";
 		}
-		return binPath + '/$name$extension';
+		return binPath + '$name$extension';
 	}
 	
 	private function createRunFile(target:String, file:String) {
