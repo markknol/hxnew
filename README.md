@@ -20,6 +20,8 @@ This will create a js project with this directory structure:
 ```
 MyProject/
 MyProject/build.hxml
+MyProject/haxelib.json
+MyProject/makefile
 MyProject/bin/index.html
 MyProject/src/Main.hx
 ```
@@ -31,13 +33,15 @@ This will create a js project with this directory structure:
 ```
 MyProject/
 MyProject/build.hxml
+MyProject/haxelib.json
+MyProject/makefile
 MyProject/bin/index.html
 MyProject/src/com/company/tool/Main.hx
 ```
 
-#### `haxelib run hxnew -name MyProject -target neko,nodejs -lib hxargs`
+#### `haxelib run hxnew -name MyProject -target neko,nodejs -lib hxargs,format`
 
-This will create a js project with this directory structure:
+This will create a neko + nodejs project with this directory structure:
 
 ```
 MyProject/
@@ -45,7 +49,9 @@ MyProject/bin/
 MyProject/src/Main.hx
 MyProject/build-neko.hxml
 MyProject/build-nodejs.hxml
+MyProject/haxelib.json
 MyProject/install.hxml
+MyProject/makefile
 MyProject/run-neko.hxml
 MyProject/run-nodejs.hxml
 ```
@@ -63,8 +69,10 @@ MyProject/run-nodejs.hxml
 [-src] <path>            : Class path source folder. default: 'src'
 [-cp] <path>             : Additional class path
 [-bin] <path>            : Output folder. default: 'bin'
-[-lib] <lib>             : Libs used in the project
+[-lib] <lib>             : Libs used in the project, comma separate
 [-target | -t] <targets> : Target languages, comma separate. Default: 'js'
 [-pack] <classPath>      : Package of the entry point
 [--no-main]              : Don't generate a Main.hx file
+[--no-makefile]          : Don't generate a makefile
+[--no-haxelib-json]      : Don't generate a haxelib.json
 ```
