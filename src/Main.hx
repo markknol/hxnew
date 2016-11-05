@@ -39,7 +39,7 @@ class Main
 			["-bin"] => function(path:String) project.binPath = path,
 			
 			@doc("Libs used in the project")
-			["-lib"] => function(lib:String) project.libs.push(lib),
+			["-lib"] => function(libs:String) for(lib in libs.split(",")) project.libs.push(lib),
 			
 			@doc("Target languages, comma separate. Default: 'js'")
 			["-target", "-t"] => function(targets:String) for(target in targets.split(",")) project.targets.push(target),
@@ -52,6 +52,9 @@ class Main
 			
 			@doc("Don't generate a makefile")
 			["--no-makefile"] => function() project.doCreateMakeFile = false,
+			
+			@doc("Don't generate a haxelib.json")
+			["--no-haxelib-json"] => function() project.doCreateHaxelibJson = false,
 			
 			_ => function(value:String) 
 				if (FileSystem.isDirectory(value)) project.curPath = value 
@@ -86,6 +89,7 @@ class Project
 	
 	public var doCreateMainClass:Bool = true;
 	public var doCreateMakeFile:Bool = true;
+	public var doCreateHaxelibJson:Bool = true;
 	
 	public var includes:Array<String> = [];
 	public var libs:Array<String> = [];
@@ -117,6 +121,7 @@ class Project
 		createRunFiles();
 		createInstallFiles();
 		createMakeFile();
+		createHaxelibJson();
 		
 		for (path in includes) {
 			includeDirectory(path);
@@ -150,7 +155,24 @@ class Project
 		}
 	}
 	
+	private function createHaxelibJson() {
+		if (!doCreateHaxelibJson) return;
+		var json = "";
+		var dependencies = "";
+		
+		if (libs.length > 0) {
+			for (lib in libs) dependencies += '    "$lib" : ""' + NEWLINE;
+		}
+		
+		var targets_ = targets.copy();
+		targets_.unshift("haxe");
+		var tags = [for (target in targets_) '"$target"'].join(",");
+		
+		File.saveContent(outPath + "haxelib.json", replaceVars(File.getContent(Sys.getCwd() + '/template/haxelib.json')).replace("$dependencies",dependencies).replace("$tags",tags));
+	}
+	
 	private function createMakeFile() {
+		if (!doCreateMakeFile) return;
 		var makefile = "";
 		makefile += 'clean:' + NEWLINE;
 		makefile += '    rm $binPath' + NEWLINE;
@@ -284,6 +306,7 @@ class Project
 		return switch(target) {
 			case "nodejs": 'node $outputPath';
 			case "python": 'python $outputPath';
+			case "swf": 'run $outputPath';
 			case "neko": 'neko $outputPath';
 			case "hl": 'hl $outputPath';
 			case "php": 'php $outputPath';
