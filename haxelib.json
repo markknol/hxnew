@@ -1,6 +1,6 @@
 {
-  "name": "haxeproj",
-  "url" : "https://github.com/markknol/haxeproj/",
+  "name": "hxnew",
+  "url" : "https://github.com/markknol/hxnew/",
   "license": "MIT",
   "tags": ["cross", "haxe"],
   "description": "Create new projects in a blast.",
