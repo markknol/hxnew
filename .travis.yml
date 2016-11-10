@@ -10,7 +10,6 @@ install:
 
 script:
   - haxelib dev hxnew .
-  - cd bin/
   - haxelib run hxnew -name com.website.MyProject1
   - cd MyProject1/
   - haxe build.hxml
