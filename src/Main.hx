@@ -145,13 +145,17 @@ class Project
 	
 	private function createInstallFiles() {
 		if (libs.length > 0) {
+			var hxml = '';
 			if (targets.length > 1) {
-				var hxml = '';
-				for (target in targets) hxml += '-cmd haxelib install build-${target}.hxml' + NEWLINE;
-				File.saveContent(outPath + "install.hxml", hxml);
+				for (i in 0...targets.length) {
+					var target = targets[i];
+					hxml += '-cmd haxelib install build-${target}.hxml --always ' + NEWLINE;
+					if (i != targets.length - 1) hxml += '--next' + NEWLINE;
+				}
 			} else {
-				File.saveContent(outPath + "install.hxml", "-cmd haxelib install build.hxml");
+				hxml += '-cmd haxelib install build.hxml --always ' + NEWLINE;
 			}
+			File.saveContent(outPath + "install.hxml", hxml);
 		}
 	}
 	
@@ -258,7 +262,7 @@ class Project
 			case "nodejs": "js";
 			default: target;
 		}
-		hxml += '-$target ${getOutputPath(actualTarget)}' + NEWLINE;
+		hxml += '-$actualTarget ${getOutputPath(target)}' + NEWLINE;
 		
 		if (target == "nodejs") hxml += '-lib hxnodejs' + NEWLINE;
 		if (libs.length > 0) for (lib in libs) hxml += '-lib $lib' + NEWLINE;
@@ -267,9 +271,10 @@ class Project
 	}
 	
 	private function createRunFiles() {
+		trace(targets, targets.length);
 		if (targets.length > 0) {
 			if (targets.length == 1) {
-				createRunFile(DEFAULT_TARGET, 'run.hxml');
+				createRunFile(targets[0], 'run.hxml');
 			} else {
 				for (target in targets) {
 					createRunFile(target, 'run-$target.hxml');
