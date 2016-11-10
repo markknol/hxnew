@@ -7,8 +7,26 @@ haxe:
 install:
   - yes | haxelib install build.hxml
   - haxe build.hxml
+
+script:
   - haxelib dev hxnew .
-  - haxe test.hxml
+  - cd bin/
+  - haxelib run hxnew -name com.website.MyProject1
+  - cd MyProject1/
+  - haxe build.hxml
+  - cd ../
+  - haxelib run hxnew -name com.MyProject2 -target neko
+  - cd MyProject2/
+  - haxe build.hxml
+  - haxe run.hxml
+  - cd ../
+  - haxelib run hxnew -name MyProject3 -target neko,nodejs -lib format
+  - cd MyProject3/
+  - haxe install.hxml
+  - haxe build-neko.hxml
+  - haxe run-neko.hxml
+  - haxe build-nodejs.hxml
+  - haxe run-nodejs.hxml
 
 notifications:
   email: false
