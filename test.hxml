@@ -1,0 +1,60 @@
+-cmd cd bin/
+--next
+
+# compile project 1
+-cmd haxelib run hxnew -name com.website.MyProject1
+--next
+
+# test project 1
+
+-cmd cd MyProject1/
+--next
+
+build.hxml
+--next
+
+-cmd cd ../
+--next
+
+# compile project 2
+
+-cmd haxelib run hxnew -name com.MyProject2 -target neko
+--next
+
+# test project 2
+-cmd cd MyProject2/
+--next
+
+build.hxml
+--next
+
+run.hxml
+--next
+
+-cmd cd ../
+--next
+
+# compile project 3
+
+-cmd haxelib run hxnew -name MyProject3 -target neko,nodejs -lib format
+--next
+
+# test project 3
+
+-cmd cd MyProject3/
+--next
+
+install.hxml
+--next
+
+build-neko.hxml
+--next
+
+run-neko.hxml
+--next
+
+build-nodejs.hxml
+--next
+
+run-nodejs.hxml
+--next

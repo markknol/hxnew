@@ -1,0 +1,14 @@
+language: haxe
+
+haxe:
+  - "3.2.1"
+  - development
+
+install:
+  - yes | haxelib install build.hxml
+  - haxe build.hxml
+  - haxelib dev hxnew .
+  - haxe test.hxml
+
+notifications:
+  email: false
