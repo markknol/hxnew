@@ -26,7 +26,7 @@ MyProject/bin/index.html
 MyProject/src/Main.hx
 ```
 
-#### `haxelib run hxnew -name com.company.tool.MyProject`
+#### `haxelib run hxnew -name MyProject -pack com.company.tool`
 
 This will create a js project with this directory structure:
 

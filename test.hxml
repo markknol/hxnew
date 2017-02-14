@@ -2,7 +2,7 @@
 --next
 
 # compile project 1
--cmd haxelib run hxnew -name com.website.MyProject1
+-cmd haxelib run hxnew -name MyProject1 -pack com.website
 --next
 
 # test project 1
@@ -18,11 +18,11 @@ build.hxml
 
 # compile project 2
 
--cmd haxelib run hxnew -name com.MyProject2 -target neko
+-cmd haxelib run hxnew -name test.MyProject2 -target neko
 --next
 
 # test project 2
--cmd cd MyProject2/
+-cmd cd test.MyProject2/
 --next
 
 build.hxml

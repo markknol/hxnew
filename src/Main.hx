@@ -17,11 +17,7 @@ class Main
 		var project = new Project();
 		var argHandler = hxargs.Args.generate([
 			@doc("Name of the project. required")
-			["-name", "-n"] => function(name:String) {
-				var path = name.split(".");
-				project.name = path.pop();
-				if (path.length > 0) project.classPath = path.join(".");
-			},
+			["-name", "-n"] => function(name:String) project.name = name,
 			
 			@doc("Folder to include in project")
 			["-include", "-i"] => function(path:String) project.includes.push(path),
