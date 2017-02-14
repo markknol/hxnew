@@ -1,5 +1,7 @@
 # hxnew
 
+[![Build Status](https://travis-ci.org/markknol/hxnew.svg?branch=master)](https://travis-ci.org/markknol/hxnew)
+
 > Create new Haxe projects in a blast!  
 > This tool is ment to run once to create an initial plain Haxe project structure.
 
