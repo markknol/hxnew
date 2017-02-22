@@ -49,6 +49,9 @@ class Main
 			@doc("Don't generate a makefile")
 			["--no-makefile"] => function() project.doCreateMakeFile = false,
 			
+			@doc("Don't generate HaxeDevelop project files")
+			["--no-haxedevelop"] => function() project.doCreateHaxeDevelopProjects = false,
+			
 			@doc("Don't generate a haxelib.json")
 			["--no-haxelib-json"] => function() project.doCreateHaxelibJson = false,
 			
@@ -86,6 +89,7 @@ class Project
 	public var doCreateMainClass:Bool = true;
 	public var doCreateMakeFile:Bool = true;
 	public var doCreateHaxelibJson:Bool = true;
+	public var doCreateHaxeDevelopProjects:Bool = true;
 	
 	public var includes:Array<String> = [];
 	public var libs:Array<String> = [];
@@ -118,6 +122,7 @@ class Project
 		createInstallFiles();
 		createMakeFile();
 		createHaxelibJson();
+		createHaxeDevelopProjects();
 		
 		for (path in includes) {
 			includeDirectory(path);
@@ -169,6 +174,28 @@ class Project
 		var tags = [for (target in targets_) '"$target"'].join(",");
 		
 		File.saveContent(outPath + "haxelib.json", replaceVars(File.getContent(Sys.getCwd() + '/template/haxelib.json')).replace("$dependencies",dependencies).replace("$tags",tags));
+	}
+	
+	private function createHaxeDevelopProjects() {
+		if (!doCreateHaxeDevelopProjects) return;
+		var fullPathToMain = srcPath.replace("/","\\") + (classPath != "" ? classPath.replace(".","\\") + "\\Main.hx" : "\\Main.hx");
+		
+		var dependencies = "";
+		if (libs.length > 0 )
+		{
+			for (lib in libs) dependencies += '    <library name="$lib" />';
+		}
+		
+		if (targets.length > 1) {
+			for (target in targets) {
+				var run = getRunCommand(target) != null ? 'run-$target.hxml' : "";
+				File.saveContent(outPath + '${name}-${target}.hxproj', replaceVars(File.getContent(Sys.getCwd() + '/template/haxedevelop.hxproj.template')).replace("$fullPathToMain", fullPathToMain).replace("$build", 'build-$target.hxml').replace("$run", run).replace("$libs", dependencies));
+			}
+		} else {
+			var target = targets[0];
+			var run = getRunCommand(target) != null ? 'run.hxml' : "";
+			File.saveContent(outPath + '${name}.hxproj', replaceVars(File.getContent(Sys.getCwd() + '/template/haxedevelop.hxproj.template')).replace("$fullPathToMain", fullPathToMain).replace("$build", 'build.hxml').replace("$run", run).replace("$libs", dependencies));
+		}
 	}
 	
 	private function createMakeFile() {

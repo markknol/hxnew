@@ -1,21 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <project version="2">
   <!-- Output SWF options -->
   <output>
-    <movie outputType="Application" />
+    <movie outputType="CustomBuild" />
     <movie input="" />
-    <movie path="run.n" />
+    <movie path="$build" />
     <movie fps="0" />
     <movie width="0" />
     <movie height="0" />
     <movie version="0" />
     <movie minorVersion="0" />
-    <movie platform="Neko" />
+    <movie platform="hxml" />
     <movie background="#FFFFFF" />
+    <movie preferredSDK="" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="src" />
+    <class path="$srcPath" />
   </classpaths>
   <!-- Build options -->
   <build>
@@ -28,25 +29,25 @@
   </build>
   <!-- haxelib libraries -->
   <haxelib>
-    <library name="hxargs" />
+$libs
   </haxelib>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\Main.hx" />
+    <compile path="$fullPathToMain" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
-    <hidden path="obj" />
+    <hidden path="$binPath" />
   </hiddenPaths>
   <!-- Executed before build -->
-  <preBuildCommand />
+  <preBuildCommand>cmd /c haxe $(OutputFile)</preBuildCommand>
   <!-- Executed after build -->
-  <postBuildCommand alwaysRun="False" />
+  <postBuildCommand alwaysRun="False"></postBuildCommand>
   <!-- Other project options -->
   <options>
-    <option showHiddenPaths="True" />
+    <option showHiddenPaths="False" />
     <option testMovie="Custom" />
-    <option testMovieCommand="haxe test.hxml" />
+    <option testMovieCommand="$run" />
   </options>
   <!-- Plugin storage -->
   <storage />
