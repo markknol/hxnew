@@ -123,6 +123,7 @@ class Project
 		createMakeFile();
 		createHaxelibJson();
 		createHaxeDevelopProjects();
+		createGitignore();
 		
 		for (path in includes) {
 			includeDirectory(path);
@@ -233,6 +234,12 @@ class Project
 		}
 		
 		File.saveContent(outPath + "makefile", makefile);
+	}
+	
+	private function createGitignore() 
+	{
+		var gitignoreFile = binPath;
+		File.saveContent(outPath + ".gitignore", gitignoreFile);
 	}
 	
 	private function createBinPath() {
