@@ -52,6 +52,12 @@ class Main
 			@doc("Don't generate HaxeDevelop project files")
 			["--no-haxedevelop"] => function() project.doCreateHaxeDevelopProjects = false,
 			
+			@doc("Don't generate README.md")
+			["--no-readme"] => function() project.doCreateReadme = false,
+			
+			@doc("Don't generate .gitignore")
+			["--no-gitignore"] => function() project.doCreateGitignore = false,
+			
 			@doc("Don't generate a haxelib.json")
 			["--no-haxelib-json"] => function() project.doCreateHaxelibJson = false,
 			
@@ -89,6 +95,8 @@ class Project
 	public var doCreateMainClass:Bool = true;
 	public var doCreateMakeFile:Bool = true;
 	public var doCreateHaxelibJson:Bool = true;
+	public var doCreateGitignore:Bool = true;
+	public var doCreateReadme:Bool = true;
 	public var doCreateHaxeDevelopProjects:Bool = true;
 	
 	public var includes:Array<String> = [];
@@ -124,6 +132,7 @@ class Project
 		createHaxelibJson();
 		createHaxeDevelopProjects();
 		createGitignore();
+		createReadme();
 		
 		for (path in includes) {
 			includeDirectory(path);
@@ -236,10 +245,57 @@ class Project
 		File.saveContent(outPath + "makefile", makefile);
 	}
 	
-	private function createGitignore() 
-	{
+	private function createGitignore() {
+		if (!doCreateGitignore) return;
 		var gitignoreFile = binPath;
 		File.saveContent(outPath + ".gitignore", gitignoreFile);
+	}
+	
+	private function createReadme() {
+		if (!doCreateReadme) return;
+		var readmeFile = "# " + name + NEWLINE + NEWLINE;
+		
+		readmeFile += "### Dependencies" + NEWLINE + NEWLINE;
+		readmeFile += " * [Haxe](https://haxe.org/)" + NEWLINE;
+		
+		// support libraries
+		for (target in targets) {
+			readmeFile += switch(target) {
+				case "nodejs": ' * [hxnodejs](https://lib.haxe.org/p/hxnodejs)' + NEWLINE;
+				case "cs": ' * [hxcs](https://lib.haxe.org/p/hxcs)' + NEWLINE;
+				case "cpp": ' * [hxcpp](https://lib.haxe.org/p/hxcpp)' + NEWLINE;
+				case "java": ' * [hxjava](https://lib.haxe.org/p/hxjava)' + NEWLINE;
+				case "hl": ' * [hashlink](https://lib.haxe.org/p/hashlink)' + NEWLINE;
+				default: "";
+			}
+		}
+		if (libs.length > 0) {
+			for (lib in libs) readmeFile += ' * [$lib](https://lib.haxe.org/p/$lib)' + NEWLINE;
+			readmeFile += NEWLINE + "Install the dependencies by running `install.hxml`." + NEWLINE;
+		}
+		readmeFile += NEWLINE;
+		
+		if (targets.length > 1) {
+			for (target in targets) {
+				readmeFile += '### Testing ${target}' + NEWLINE + NEWLINE;
+				readmeFile += '```' + NEWLINE;
+				readmeFile += 'haxe build-$target.hxml' + NEWLINE;
+				var command = getRunCommand(target);
+				if (command != null) readmeFile += '$command' + NEWLINE;
+				readmeFile += '```' + NEWLINE + NEWLINE;
+			} 
+		} else {
+			var target = targets[0];
+			readmeFile += '### Testing ${target}' + NEWLINE + NEWLINE;
+			readmeFile += '```' + NEWLINE;
+			readmeFile += 'haxe build.hxml' + NEWLINE;
+			var command = getRunCommand(target);
+			if (command != null) readmeFile += '$command' + NEWLINE;
+			readmeFile += '```' + NEWLINE + NEWLINE;
+		}
+		
+		
+		File.saveContent(outPath + "README.md", readmeFile);
 	}
 	
 	private function createBinPath() {
@@ -295,6 +351,10 @@ class Project
 		hxml += '-$actualTarget ${getOutputPath(target)}' + NEWLINE;
 		
 		if (target == "nodejs") hxml += '-lib hxnodejs' + NEWLINE;
+		if (target == "java") hxml += '-lib hxjava' + NEWLINE;
+		if (target == "cpp") hxml += '-lib hxcpp' + NEWLINE;
+		if (target == "cs") hxml += '-lib hxcs' + NEWLINE;
+		
 		if (libs.length > 0) for (lib in libs) hxml += '-lib $lib' + NEWLINE;
 		
 		File.saveContent(outPath + file, hxml);
