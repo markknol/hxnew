@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/markknol/hxnew.svg?branch=master)](https://travis-ci.org/markknol/hxnew)
 
 > Create new Haxe projects in a blast!  
-> This tool is ment to run once to create an initial plain Haxe project structure.
+> This tool is ment to create an plain Haxe project. Run it once.
 
 ## Installation
 
-Currently there is no haxelib, you can use the git version to test the tool:
+Currently the hxnew tool does not exist on haxelib. To use it, use git version to use the tool:
 
 ```
 haxelib git hxnew https://github.com/markknol/hxnew.git
@@ -20,12 +20,14 @@ haxelib git hxnew https://github.com/markknol/hxnew.git
 This will create a js project with this directory structure:
 
 ```
-MyProject/
+MyProject/bin/index.html
+MyProject/src/Main.hx
+MyProject/.gitignore
 MyProject/build.hxml
 MyProject/haxelib.json
 MyProject/makefile
-MyProject/bin/index.html
-MyProject/src/Main.hx
+MyProject/README.md
+MyProject/MyProject.hxproj
 ```
 
 #### `haxelib run hxnew -name MyProject -pack com.company.tool`
@@ -33,12 +35,14 @@ MyProject/src/Main.hx
 This will create a js project with this directory structure:
 
 ```
-MyProject/
-MyProject/build.hxml
-MyProject/haxelib.json
-MyProject/makefile
 MyProject/bin/index.html
 MyProject/src/com/company/tool/Main.hx
+MyProject/.gitignore
+MyProject/build.hxml
+MyProject/haxelib.json
+MyProject/README.md
+MyProject/makefile
+MyProject/MyProject.hxproj
 ```
 
 #### `haxelib run hxnew -name MyProject -target neko,nodejs -lib hxargs,format`
@@ -46,21 +50,22 @@ MyProject/src/com/company/tool/Main.hx
 This will create a neko + nodejs project with this directory structure:
 
 ```
-MyProject/
 MyProject/bin/
 MyProject/src/Main.hx
+MyProject/.gitignore
 MyProject/build-neko.hxml
 MyProject/build-nodejs.hxml
 MyProject/haxelib.json
 MyProject/install.hxml
 MyProject/makefile
+MyProject/README.md
 MyProject/run-neko.hxml
 MyProject/run-nodejs.hxml
+MyProject/MyProject.hxproj
 ```
 
 * When providing a lib, a install.hxml is created. Run this to install the project dependencies.
 * The run files start the process to run the code
-
 
 ## Command line help
 
@@ -75,6 +80,10 @@ MyProject/run-nodejs.hxml
 [-target | -t] <targets> : Target languages, comma separate. Default: 'js'
 [-pack] <classPath>      : Package of the entry point
 [--no-main]              : Don't generate a Main.hx file
+[--no-makefile]          : Don't generate a makefile
+[--no-gitignore]         : Don't generate .gitignore
+[--no-readme]            : Don't generate README.md
+[--no-haxedevelop]       : Don't generate HaxeDevelop project files
 [--no-makefile]          : Don't generate a makefile
 [--no-haxelib-json]      : Don't generate a haxelib.json
 ```
