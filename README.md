@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/markknol/hxnew.svg?branch=master)](https://travis-ci.org/markknol/hxnew)
 
 > Create new Haxe projects in a blast!  
-> This tool is ment to create an plain Haxe project. Run it once.
+> This tool is meant to create an plain Haxe project. Run it once.
 
 ## Installation
 
@@ -64,7 +64,7 @@ MyProject/run-nodejs.hxml
 MyProject/MyProject.hxproj
 ```
 
-* When providing a lib, a install.hxml is created. Run this to install the project dependencies.
+* When providing a lib, an install.hxml is created. Run this to install the project dependencies.
 * The run files start the process to run the code
 
 ## Command line help
@@ -84,6 +84,5 @@ MyProject/MyProject.hxproj
 [--no-gitignore]         : Don't generate .gitignore
 [--no-readme]            : Don't generate README.md
 [--no-haxedevelop]       : Don't generate HaxeDevelop project files
-[--no-makefile]          : Don't generate a makefile
 [--no-haxelib-json]      : Don't generate a haxelib.json
 ```
