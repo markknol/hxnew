@@ -6,11 +6,10 @@ haxe:
 
 install:
   - yes | haxelib install travix
-  - haxelib run travix install
-  - yes | haxelib install build.hxml
-  - haxe build.hxml
+  - haxelib run travix init
 
 script:
+  - haxe build.hxml
   - haxelib dev hxnew .
   - haxelib run hxnew -name MyProject1 -pack com.website
   - cd MyProject1/
