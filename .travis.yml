@@ -5,6 +5,8 @@ haxe:
   - "3.4.0"
 
 install:
+  - yes | haxelib install travix
+  - haxelib run travix install
   - yes | haxelib install build.hxml
   - haxe build.hxml
 
@@ -29,3 +31,10 @@ script:
 
 notifications:
   email: false
+
+jobs:
+  include:
+    - stage: deploy
+      os: linux
+      script: skip
+      after_success: haxelib run travix release
