@@ -37,8 +37,12 @@ class Main
 			@doc("Libs used in the project")
 			["-lib"] => function(libs:String) for(lib in libs.split(",")) project.libs.push(lib),
 			
-			@doc("Target languages, comma separate. Default: 'js'")
-			["-target", "-t"] => function(targets:String) for(target in targets.split(",")) project.targets.push(target),
+			@doc("Target languages, comma separate. Or \"all\" for all targets. Default: 'js'")
+			["-target", "-t"] => function(targets:String) 
+				if (targets == "all") 
+					for (target in ["js", "nodejs", "python", "swf", "as3", "lua", "php7", "neko", "hl", "php", "java", "cpp", "cs"]) project.targets.push(target)
+				else
+					for (target in targets.split(",")) project.targets.push(target),
 			
 			@doc("Package of the entry point")
 			["-pack"] => function(classPath:String) project.classPath = classPath,
@@ -155,19 +159,18 @@ class Project
 	}
 	
 	private function createInstallFiles() {
-		if (libs.length > 0) {
-			var hxml = '';
-			if (targets.length > 1) {
-				for (i in 0...targets.length) {
-					var target = targets[i];
-					hxml += '-cmd haxelib install build-${target}.hxml --always ' + NEWLINE;
-					if (i != targets.length - 1) hxml += '--next' + NEWLINE;
-				}
-			} else {
-				hxml += '-cmd haxelib install build.hxml --always ' + NEWLINE;
+		var hxml = '';
+		if (targets.length > 1) {
+			for (i in 0...targets.length) {
+				var target = targets[i];
+				hxml += '-cmd haxelib install build-${target}.hxml --always ' + NEWLINE;
+
+				if (i != targets.length - 1) hxml += '--next' + NEWLINE;
 			}
-			File.saveContent(outPath + "install.hxml", hxml);
+		} else {
+			hxml += '-cmd haxelib install build.hxml --always ' + NEWLINE;
 		}
+		File.saveContent(outPath + "install.hxml", hxml);
 	}
 	
 	private function createHaxelibJson() {
@@ -376,6 +379,7 @@ class Project
 	private function getOutputPath(target:String) {
 		var extension = switch(target) {
 			case "js","nodejs": ".js";
+			case "cs": "/bin/Main.exe";
 			case "python": ".py";
 			case "swf": ".swf";
 			case "lua": ".lua";
