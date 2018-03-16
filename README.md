@@ -1,7 +1,8 @@
 # hxnew
 
 [![Build Status](https://travis-ci.org/markknol/hxnew.svg?branch=master)](https://travis-ci.org/markknol/hxnew)
-
+[![Haxelib Version](https://img.shields.io/github/tag/markknol/hxnew.svg?label=haxelib)](http://lib.haxe.org/p/hxnew)
+	
 > Create new Haxe projects in a blast!  
 > This tool is meant to create an plain Haxe project. Run it once.
 
