@@ -6,6 +6,7 @@ language: haxe
 haxe:
   - "3.4.0"
   - "3.4.4"
+  - "3.4.7"
   - "development"
 
 matrix:
@@ -13,8 +14,7 @@ matrix:
     - haxe: development
 
 install:
-  - yes | haxelib install travix
-  - haxelib run travix install
+  - yes | haxelib install all
 
 script:
   - haxe build.hxml
@@ -39,9 +39,12 @@ script:
 notifications:
   email: false
 
-jobs:
-  include:
-    - stage: deploy
-      os: linux
-      script: skip
-      after_success: haxelib run travix release
+deploy:
+  - provider: script
+    haxe: 3.4.7
+    script:
+     - rm -f hxnew.zip
+     - zip -r hxnew.zip src template run.n haxelib.json readme.md
+     - haxelib submit hxnew.zip $HAXELIB_PWD --always
+    on:
+      tags: true
