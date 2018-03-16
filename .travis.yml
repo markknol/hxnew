@@ -42,6 +42,6 @@ notifications:
 deploy:
   - provider: script
     haxe: 3.4.7
-     script: bash ./releaseHaxelib.sh $HAXELIB_PWD
+    script: bash ./releaseHaxelib.sh $HAXELIB_PWD
     on:
       tags: true
