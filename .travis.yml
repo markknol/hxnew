@@ -35,6 +35,7 @@ script:
   - haxe run-neko.hxml
   - haxe build-nodejs.hxml
   - haxe run-nodejs.hxml
+  - cd ../
 
 notifications:
   email: false
