@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["cross", "haxe"],
   "description": "Create new projects in a blast.",
-  "version": "0.0.5",
-  "releasenote": "Initial release, everything is working correctly.",
+  "version": "0.0.8",
+  "releasenote": "Add travis files. Can be disabled with --no-travis",
   "contributors": ["markknol"],
   "dependencies": {
     "hxargs": ""

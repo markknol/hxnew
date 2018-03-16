@@ -65,6 +65,9 @@ class Main
 			@doc("Don't generate a haxelib.json")
 			["--no-haxelib-json"] => function() project.doCreateHaxelibJson = false,
 			
+			@doc("Don't generate a travis files")
+			["--no-travis"] => function() project.doCreateTravis = false,
+			
 			_ => function(value:String) 
 				if (FileSystem.isDirectory(value)) project.curPath = value 
 				else throw 'Cannot parse arg $value',
@@ -99,6 +102,7 @@ class Project
 	public var doCreateMainClass:Bool = true;
 	public var doCreateMakeFile:Bool = true;
 	public var doCreateHaxelibJson:Bool = true;
+	public var doCreateTravis:Bool = true;
 	public var doCreateGitignore:Bool = true;
 	public var doCreateReadme:Bool = true;
 	public var doCreateHaxeDevelopProjects:Bool = true;
@@ -134,6 +138,7 @@ class Project
 		createInstallFiles();
 		createMakeFile();
 		createHaxelibJson();
+		createTravis();
 		createHaxeDevelopProjects();
 		createGitignore();
 		createReadme();
@@ -144,7 +149,7 @@ class Project
 		
 		Sys.println("Project created: " + outPath);
 	}
-	
+
 	private function createOutPath() {
 		FileSystem.createDirectory(outPath);
 	}
@@ -187,6 +192,23 @@ class Project
 		var tags = [for (target in targets_) '"$target"'].join(",");
 		
 		File.saveContent(outPath + "haxelib.json", replaceVars(File.getContent(Sys.getCwd() + '/template/haxelib.json')).replace("$dependencies",dependencies).replace("$tags",tags));
+	}
+	
+	private function createTravis() {
+		if (!doCreateTravis) return;
+		
+		var scripts = "";
+		if (targets.length > 1) {
+			for (target in targets) {
+				scripts += '  - haxe build-$target.hxml' + NEWLINE;
+			} 
+		} else {
+			var target = targets[0];
+			scripts += '  - haxe build.hxml' + NEWLINE;
+		}
+		
+		File.saveContent(outPath + ".travis.yml", replaceVars(File.getContent(Sys.getCwd() + '/template/.travis.yml')).replace("$scripts", scripts));
+		File.saveContent(outPath + "releaseHaxelib.sh", replaceVars(File.getContent(Sys.getCwd() + '/template/releaseHaxelib.sh')));
 	}
 	
 	private function createHaxeDevelopProjects() {
