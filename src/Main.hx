@@ -65,7 +65,7 @@ class Main
 			@doc("Don't generate a haxelib.json")
 			["--no-haxelib-json"] => function() project.doCreateHaxelibJson = false,
 			
-			@doc("Don't generate a travis files")
+			@doc("Don't generate Travis files")
 			["--no-travis"] => function() project.doCreateTravis = false,
 			
 			_ => function(value:String) 

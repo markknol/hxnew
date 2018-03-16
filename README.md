@@ -2,16 +2,16 @@
 
 [![Build Status](https://travis-ci.org/markknol/hxnew.svg?branch=master)](https://travis-ci.org/markknol/hxnew)
 [![Haxelib Version](https://img.shields.io/github/tag/markknol/hxnew.svg?label=haxelib)](http://lib.haxe.org/p/hxnew)
-	
+
 > Create new Haxe projects in a blast!  
 > This tool is meant to create an plain Haxe project. Run it once.
 
 ## Installation
 
-Currently the hxnew tool does not exist on haxelib. To use it, use git version to use the tool:
+Install using [haxelib](http://lib.haxe.org/p/hxnew):
 
 ```
-haxelib git hxnew https://github.com/markknol/hxnew.git
+haxelib install hxnew
 ```
 
 ## How to use 
@@ -85,5 +85,6 @@ MyProject/MyProject.hxproj
 [--no-gitignore]         : Don't generate .gitignore
 [--no-readme]            : Don't generate README.md
 [--no-haxedevelop]       : Don't generate HaxeDevelop project files
+[--no-travis]            : Don't generate Travis files
 [--no-haxelib-json]      : Don't generate a haxelib.json
 ```
