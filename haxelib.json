@@ -4,7 +4,7 @@
   "license": "MIT",
   "tags": ["cross", "haxe"],
   "description": "Create new projects in a blast.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "releasenote": "Initial release, everything is working correctly.",
   "contributors": ["markknol"],
   "dependencies": {
