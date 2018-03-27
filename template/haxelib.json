@@ -4,7 +4,7 @@
   "license": "MIT",
   "tags": [$tags],
   "description": "description of $name",
-  "version": "0.1",
+  "version": "0.0.1",
   "releasenote": "Initial release",
   "contributors": ["YOUR_NAME"],
   "dependencies": {
