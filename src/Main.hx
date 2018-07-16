@@ -208,7 +208,7 @@ class Project
 		}
 		
 		File.saveContent(outPath + ".travis.yml", replaceVars(File.getContent(Sys.getCwd() + '/template/.travis.yml')).replace("$scripts", scripts));
-		File.saveContent(outPath + "releaseHaxelib.sh", replaceVars(File.getContent(Sys.getCwd() + '/template/releaseHaxelib.sh')));
+		File.saveContent(outPath + "release_haxelib.sh", replaceVars(File.getContent(Sys.getCwd() + '/template/release_haxelib.sh')));
 	}
 	
 	private function createHaxeDevelopProjects() {
