@@ -24,26 +24,21 @@ This will create a js project with this directory structure:
 MyProject/bin/index.html
 MyProject/src/Main.hx
 MyProject/.gitignore
+MyProject/.travis.yml
 MyProject/build.hxml
 MyProject/haxelib.json
-MyProject/makefile
-MyProject/README.md
+MyProject/makefile 
+MyProject/README.md # to publish to haxelib
+MyProject/release_haxelib.sh
 MyProject/MyProject.hxproj
 ```
 
 #### `haxelib run hxnew -name MyProject -pack com.company.tool`
 
-This will create a js project with this directory structure:
+This will create a js project with same directory structure as above but the Main class located in the com.mediamonks.tool package. 
 
 ```
-MyProject/bin/index.html
 MyProject/src/com/company/tool/Main.hx
-MyProject/.gitignore
-MyProject/build.hxml
-MyProject/haxelib.json
-MyProject/README.md
-MyProject/makefile
-MyProject/MyProject.hxproj
 ```
 
 #### `haxelib run hxnew -name MyProject -target neko,nodejs -lib hxargs,format`
@@ -54,6 +49,7 @@ This will create a neko + nodejs project with this directory structure:
 MyProject/bin/
 MyProject/src/Main.hx
 MyProject/.gitignore
+MyProject/.travis.yml
 MyProject/build-neko.hxml
 MyProject/build-nodejs.hxml
 MyProject/haxelib.json
@@ -62,11 +58,12 @@ MyProject/makefile
 MyProject/README.md
 MyProject/run-neko.hxml
 MyProject/run-nodejs.hxml
+MyProject/release_haxelib.sh
 MyProject/MyProject.hxproj
 ```
-
-* When providing a lib, an install.hxml is created. Run this to install the project dependencies.
-* The run files start the process to run the code
+> Notes:
+> * When providing a lib, an install.hxml is created. Run this to install the project dependencies.
+> * The run files start the process to run the code
 
 ## Command line help
 
