@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["cross", "haxe"],
   "description": "Create new projects in a blast.",
-  "version": "0.0.8",
-  "releasenote": "Add travis files. Can be disabled with --no-travis",
+  "version": "0.0.9",
+  "releasenote": "Add classpath to generated haxelib.json. Renamed and updated release_haxelib.sh",
   "contributors": ["markknol"],
   "dependencies": {
     "hxargs": ""
