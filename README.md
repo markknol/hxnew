@@ -27,8 +27,8 @@ MyProject/.gitignore
 MyProject/.travis.yml
 MyProject/build.hxml
 MyProject/haxelib.json
-MyProject/makefile 
-MyProject/README.md # to publish to haxelib
+MyProject/makefile
+MyProject/README.md
 MyProject/release_haxelib.sh
 MyProject/MyProject.hxproj
 ```
