@@ -277,14 +277,16 @@ class Project {
 		if (targets.has("cpp")) command("npm run lix install haxelib:hxcpp");
 		if (targets.has("cs")) command("npm run lix install haxelib:hxcs");
 		
-		if (doCreateHaxeDevelopProjects) command("node_modules\\.bin\\haxe.cmd --run resolve-args build.hxml > ide.hxml");
+		
+		var nodeHaxePath = 'node_modules\\.bin\\haxe.cmd';
+		if (doCreateHaxeDevelopProjects && FileSystem.exists(nodeHaxePath)) command('$nodeHaxePath --run resolve-args build.hxml > ide.hxml');
 		
 		Sys.setCwd(oldCwd);
 		log('[completed] lix setup');
 	}
 	
 	private function command(cmd:String) {
-		log(cmd);
+		log("[command] " + cmd);
 		Sys.command(cmd);
 	}
 	
