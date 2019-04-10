@@ -40,7 +40,7 @@ $libs
     <hidden path="$binPath" />
   </hiddenPaths>
   <!-- Executed before build -->
-  <preBuildCommand>cmd /c haxe $(OutputFile)</preBuildCommand>
+  <preBuildCommand>$preBuildCommand</preBuildCommand>
   <!-- Executed after build -->
   <postBuildCommand alwaysRun="False"></postBuildCommand>
   <!-- Other project options -->

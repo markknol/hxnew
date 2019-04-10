@@ -1,19 +1,21 @@
 package;
+import haxe.Json;
 import haxe.io.Path;
 import hxargs.Args;
 import sys.FileSystem;
 import sys.io.File;
 using StringTools;
+using Lambda;
 
 /**
  * @author Mark Knol
  */
-class Main 
-{
+class Main {
 	static function main() new Main();
 
-	private function new()
-	{
+	private function new() {
+		var haxelibVersion = Util.getHaxelibVersion();
+		var doGenerate = true;
 		var project = new Project();
 		var argHandler = hxargs.Args.generate([
 			@doc("Name of the project. required")
@@ -34,8 +36,8 @@ class Main
 			@doc("Output folder. default: 'bin'")
 			["-bin"] => function(path:String) project.binPath = path,
 			
-			@doc("Libs used in the project")
-			["-lib"] => function(libs:String) for(lib in libs.split(",")) project.libs.push(lib),
+			@doc("Libs used in the project, comma separate")
+			["-lib", "-libs"] => function(libs:String) for(lib in libs.split(",")) project.libs.push(lib.trim()),
 			
 			@doc("Target languages, comma separate. Or \"all\" for all targets. Default: 'js'")
 			["-target", "-t"] => function(targets:String) 
@@ -47,14 +49,17 @@ class Main
 			@doc("Package of the entry point")
 			["-pack"] => function(classPath:String) project.classPath = classPath,
 			
-			@doc("Don't generate a Main.hx file")
-			["--no-main"] => function() project.doCreateMainClass = false,
+			@doc("Use Lix.pm. Assumes global available `npm` command")
+			["--lix"] => function() project.doUseLix = true,
 			
-			@doc("Don't generate a makefile")
-			["--no-makefile"] => function() project.doCreateMakeFile = false,
+			@doc("Generate a makefile")
+			["--makefile"] => function() project.doCreateMakeFile = true,
 			
 			@doc("Don't generate HaxeDevelop project files")
 			["--no-haxedevelop"] => function() project.doCreateHaxeDevelopProjects = false,
+			
+			@doc("Don't generate a Main.hx file")
+			["--no-main"] => function() project.doCreateMainClass = false,
 			
 			@doc("Don't generate README.md")
 			["--no-readme"] => function() project.doCreateReadme = false,
@@ -68,44 +73,56 @@ class Main
 			@doc("Don't generate Travis files")
 			["--no-travis"] => function() project.doCreateTravis = false,
 			
-			_ => function(value:String) 
-				if (FileSystem.isDirectory(value)) project.curPath = value 
-				else throw 'Cannot parse arg $value',
+			@doc("Log version")
+			["--version", "-v"] => function() {
+				Sys.println(haxelibVersion);
+				doGenerate = false;
+			},
+			
+			_ => function(value:String) {
+				if (!FileSystem.exists(value)) {
+					Sys.println('[error] Invalid command "$value"');
+					doGenerate = false;
+				}
+			}
 		]);
+		
 
+		var doc = 'hxnew $haxelibVersion - Create new Haxe projects in a blast!\n\n' + argHandler.getDoc();
 		var args = Sys.args();
 		if (args.length == 0) {
-			Sys.println(argHandler.getDoc());
-		} else  {
+			Sys.println(doc);
+		} else {
 			argHandler.parse(args);
-			if (project.name != null) {
+			if (project.name != null && doGenerate) {
 				project.create();
 			} else {
-				Sys.println(argHandler.getDoc());
+				if (doGenerate) Sys.println(doc);
 			}
 		}
 	}
 }
 
-class Project
-{
+class Project {
 	static inline var DEFAULT_TARGET:String = "js";
 	static inline var NEWLINE:String = "\n";
 	
 	public var name:String;
 	public var binPath:String = "bin";
 	public var srcPath:String = "src";
-	public var curPath:String;
+	public var curPath:String = Sys.getCwd();
 	public var classPath:String = "";
 	public var outPath:String;
 	
 	public var doCreateMainClass:Bool = true;
-	public var doCreateMakeFile:Bool = true;
+	public var doCreateMakeFile:Bool = false;
 	public var doCreateHaxelibJson:Bool = true;
 	public var doCreateTravis:Bool = true;
 	public var doCreateGitignore:Bool = true;
 	public var doCreateReadme:Bool = true;
 	public var doCreateHaxeDevelopProjects:Bool = true;
+	public var doCreateVSCodeProject:Bool = false;
+	public var doUseLix:Bool = false;
 	
 	public var includes:Array<String> = [];
 	public var libs:Array<String> = [];
@@ -128,6 +145,16 @@ class Project
 		
 		if (targets.length == 0) targets.push(DEFAULT_TARGET);
 		
+		if (!~/^[a-zA-Z0-9][a-zA-Z0-9 -_]{1,}/.match(name)) {
+			throw ('[error] Invalid name "$name"');
+			return;
+		}
+		
+		if (FileSystem.exists(outPath)) {
+			throw ('[error] $outPath already exist');
+			return;
+		}
+		
 		createOutPath();
 		createBinPath();
 		createPack();
@@ -138,8 +165,10 @@ class Project
 		createInstallFiles();
 		createMakeFile();
 		createHaxelibJson();
+		createLixFiles();
 		createTravis();
 		createHaxeDevelopProjects();
+		createVSCodeProject();
 		createGitignore();
 		createReadme();
 		
@@ -147,7 +176,7 @@ class Project
 			includeDirectory(path);
 		}
 		
-		Sys.println("Project created: " + outPath);
+		log("[completed] Project created: " + outPath);
 	}
 
 	private function createOutPath() {
@@ -155,15 +184,19 @@ class Project
 	}
 	
 	private function createMainClass() {
-		if (doCreateMainClass) {
-			var main = File.getContent(Sys.getCwd() + '/template/src/Main.hx');
-			main = replaceVars(main);
-			var classPathDir = classPath != "" ? classPath.replace(".", "/") : "";
-			File.saveContent(outPath + srcPath + classPathDir + "/Main.hx", main);
-		}
+		if (!doCreateMainClass) return;
+		
+		var main = File.getContent(Sys.getCwd() + '/template/src/Main.hx');
+		main = replaceVars(main);
+		var classPathDir = classPath != "" ? classPath.replace(".", "/") : "";
+		File.saveContent(outPath + srcPath + classPathDir + "/Main.hx", main);
+		
+		log('[created] ${srcPath}${classPathDir}/Main.hx');
 	}
 	
 	private function createInstallFiles() {
+		if (doUseLix) return;
+		
 		var hxml = '';
 		if (targets.length > 1) {
 			for (i in 0...targets.length) {
@@ -176,11 +209,11 @@ class Project
 			hxml += '-cmd haxelib install build.hxml --always ' + NEWLINE;
 		}
 		File.saveContent(outPath + "install.hxml", hxml);
+		log('[created] install.hxml');
 	}
 	
 	private function createHaxelibJson() {
 		if (!doCreateHaxelibJson) return;
-		var json = "";
 		var dependencies = "";
 		
 		if (libs.length > 0) {
@@ -191,24 +224,74 @@ class Project
 		targets_.unshift("haxe");
 		var tags = [for (target in targets_) '"$target"'].join(",");
 		
-		File.saveContent(outPath + "haxelib.json", replaceVars(File.getContent(Sys.getCwd() + '/template/haxelib.json')).replace("$dependencies",dependencies).replace("$tags",tags));
+		File.saveContent(outPath + "haxelib.json", replaceVars(File.getContent(Sys.getCwd() + '/template/haxelib.json')).replace("$dependencies", dependencies).replace("$tags", tags));
+		log('[created] haxelib.json');
 	}
 	
 	private function createTravis() {
 		if (!doCreateTravis) return;
 		
 		var scripts = "";
+		if (doUseLix) {
+			scripts += '  - npm lix use haxe $$TRAVIS_HAXE_VERSION' + NEWLINE;
+		}
+		var haxeCommand = doUseLix ? "npm run haxe" : "haxe";
 		if (targets.length > 1) {
 			for (target in targets) {
-				scripts += '  - haxe build-$target.hxml' + NEWLINE;
+				scripts += '  - $haxeCommand build-$target.hxml' + NEWLINE;
 			} 
 		} else {
-			var target = targets[0];
-			scripts += '  - haxe build.hxml' + NEWLINE;
+			scripts += '  - $haxeCommand build.hxml' + NEWLINE;
 		}
 		
 		File.saveContent(outPath + ".travis.yml", replaceVars(File.getContent(Sys.getCwd() + '/template/.travis.yml')).replace("$scripts", scripts));
 		File.saveContent(outPath + "release_haxelib.sh", replaceVars(File.getContent(Sys.getCwd() + '/template/release_haxelib.sh')));
+		log('[created] travis files');
+	}
+	
+	private function createLixFiles() {
+		if (!doUseLix) return;
+		
+		File.saveContent(outPath + "package.json", Json.stringify({
+			name: '$name',
+			version: "0.0.1",
+			scripts: {
+				lix: "lix",
+				haxe: "haxe",
+				haxelib: "haxelib",
+				neko: "neko",
+				postinstall: "lix download",
+			}
+		}));
+		log('[created] package.json');
+
+		log('[started] lix setup');
+		var oldCwd = Sys.getCwd();
+		Sys.setCwd(outPath);
+		command("npm install lix --save-dev");
+		command("npm run lix scope create");
+		command("npm run lix use haxe stable");
+		for (lib in libs) command("npm run lix install haxelib:" + lib);
+		if (targets.has("nodejs")) command("npm run lix install haxelib:hxnodejs");
+		if (targets.has("java")) command("npm run lix install haxelib:hxjava");
+		if (targets.has("cpp")) command("npm run lix install haxelib:hxcpp");
+		if (targets.has("cs")) command("npm run lix install haxelib:hxcs");
+		
+		if (doCreateHaxeDevelopProjects) command("node_modules\\.bin\\haxe.cmd --run resolve-args build.hxml > ide.hxml");
+		
+		Sys.setCwd(oldCwd);
+		log('[completed] lix setup');
+	}
+	
+	private function command(cmd:String) {
+		log(cmd);
+		Sys.command(cmd);
+	}
+	
+	private function createVSCodeProject() {
+		if (!doCreateVSCodeProject) return;
+		FileSystem.createDirectory(outPath + '.vscode');
+		log('[created] Visual Studio Code project files');
 	}
 	
 	private function createHaxeDevelopProjects() {
@@ -216,21 +299,38 @@ class Project
 		var fullPathToMain = srcPath.replace("/","\\") + (classPath != "" ? classPath.replace(".","\\") + "\\Main.hx" : "\\Main.hx");
 		
 		var dependencies = "";
-		if (libs.length > 0 )
-		{
+		if (libs.length > 0 && !doUseLix) {
 			for (lib in libs) dependencies += '    <library name="$lib" />';
 		}
+		var lixBuildCommand = [
+			'$$(ProjectDir)\\node_modules\\.bin\\haxe.cmd --run resolve-args build.hxml > ide.hxml',
+			'$$(ProjectDir)\\node_modules\\.bin\\haxe.cmd build.hxml',
+		].join("\r\n");
+		var buildCommand = if (doUseLix) lixBuildCommand else 'cmd /c haxe $$(OutputFile)';
 		
 		if (targets.length > 1) {
 			for (target in targets) {
-				var run = getRunCommand(target) != null ? 'run-$target.hxml' : "";
-				File.saveContent(outPath + '${name}-${target}.hxproj', replaceVars(File.getContent(Sys.getCwd() + '/template/haxedevelop.hxproj.template')).replace("$fullPathToMain", fullPathToMain).replace("$build", 'build-$target.hxml').replace("$run", run).replace("$libs", dependencies));
+				var run = getRunCommand(target) != null ? (doUseLix ? 'npm run haxe run-$target.hxml' : 'run-$target.hxml') : "";
+				var projectFile = replaceVars(File.getContent(Sys.getCwd() + '/template/haxedevelop.hxproj.template'))
+					.replace("$fullPathToMain", fullPathToMain)
+					.replace("$build", if (doUseLix) 'ide.hxml' else 'build-$target.hxml')
+					.replace("$preBuildCommand", buildCommand)
+					.replace("$run", run)
+					.replace("$libs", dependencies);
+				File.saveContent(outPath + '${name}-${target}.hxproj', projectFile);
 			}
 		} else {
 			var target = targets[0];
-			var run = getRunCommand(target) != null ? 'run.hxml' : "";
-			File.saveContent(outPath + '${name}.hxproj', replaceVars(File.getContent(Sys.getCwd() + '/template/haxedevelop.hxproj.template')).replace("$fullPathToMain", fullPathToMain).replace("$build", 'build.hxml').replace("$run", run).replace("$libs", dependencies));
+			var run = getRunCommand(target) != null ? (doUseLix ? 'npm run haxe run.hxml' : 'run.hxml') : "";
+			var projectFile = replaceVars(File.getContent(Sys.getCwd() + '/template/haxedevelop.hxproj.template'))
+				.replace("$fullPathToMain", fullPathToMain)
+				.replace("$build", if (doUseLix) 'ide.hxml' else 'build.hxml')
+				.replace("$preBuildCommand", buildCommand)
+				.replace("$run", run)
+				.replace("$libs", dependencies);
+			File.saveContent(outPath + '${name}.hxproj', projectFile);
 		}
+		log('[created] HaxeDevelop project files');
 	}
 	
 	private function createMakeFile() {
@@ -268,12 +368,14 @@ class Project
 		}
 		
 		File.saveContent(outPath + "makefile", makefile);
+		log('[created] makefile');
 	}
 	
 	private function createGitignore() {
 		if (!doCreateGitignore) return;
-		var gitignoreFile = binPath;
+		var gitignoreFile = [binPath, ".git", "node_modules", "*.orig", ".svn", ".hg", "DS_Store", "*.orig", ".idea", "ide.hxml"].join("\n");
 		File.saveContent(outPath + ".gitignore", gitignoreFile);
+		log('[created] .gitignore');
 	}
 	
 	private function createReadme() {
@@ -282,55 +384,62 @@ class Project
 		
 		readmeFile += "### Dependencies" + NEWLINE + NEWLINE;
 		readmeFile += " * [Haxe](https://haxe.org/)" + NEWLINE;
+		if (doUseLix) readmeFile += " * [Node.js](https://nodejs.org/)" + NEWLINE;
 		
 		// support libraries
 		for (target in targets) {
-			readmeFile += switch(target) {
+			readmeFile += switch target {
 				case "nodejs": ' * [hxnodejs](https://lib.haxe.org/p/hxnodejs)' + NEWLINE;
 				case "cs": ' * [hxcs](https://lib.haxe.org/p/hxcs)' + NEWLINE;
 				case "cpp": ' * [hxcpp](https://lib.haxe.org/p/hxcpp)' + NEWLINE;
 				case "java": ' * [hxjava](https://lib.haxe.org/p/hxjava)' + NEWLINE;
-				case "hl": ' * [hashlink](https://lib.haxe.org/p/hashlink)' + NEWLINE;
+				case "hl": ' * [HashLink](https://hashlink.haxe.org)' + NEWLINE;
+				case "neko": ' * [Neko](https://nekovm.org)' + NEWLINE;
 				default: "";
 			}
 		}
+		
 		if (libs.length > 0) {
 			for (lib in libs) readmeFile += ' * [$lib](https://lib.haxe.org/p/$lib)' + NEWLINE;
-			readmeFile += NEWLINE + "Install the dependencies by running `install.hxml`." + NEWLINE;
 		}
+		
+		readmeFile += NEWLINE;
+		if (doUseLix) {
+			readmeFile += "This project uses [lix.pm](https://github.com/lix-pm/lix.client) as Haxe package manager." + NEWLINE;
+			readmeFile += "Run `npm install` to install the dependencies." + NEWLINE;
+		} else {
+			readmeFile += "Run `haxelib install all` to install the dependencies." + NEWLINE;
+		}
+		
 		readmeFile += NEWLINE;
 		
-		if (targets.length > 1) {
-			for (target in targets) {
-				readmeFile += '### Testing ${target}' + NEWLINE + NEWLINE;
-				readmeFile += '```' + NEWLINE;
-				readmeFile += 'haxe build-$target.hxml' + NEWLINE;
-				var command = getRunCommand(target);
-				if (command != null) readmeFile += '$command' + NEWLINE;
-				readmeFile += '```' + NEWLINE + NEWLINE;
-			} 
-		} else {
-			var target = targets[0];
-			readmeFile += '### Testing ${target}' + NEWLINE + NEWLINE;
+		var haxeCommand = doUseLix ? "npm run haxe" : "haxe";
+		for (target in targets) {
+			readmeFile += '### Compile ${target}' + NEWLINE + NEWLINE;
 			readmeFile += '```' + NEWLINE;
-			readmeFile += 'haxe build.hxml' + NEWLINE;
+			if (targets.length > 1) {
+				readmeFile += '$haxeCommand build-$target.hxml' + NEWLINE;
+			} else {
+				readmeFile += '$haxeCommand build.hxml' + NEWLINE;
+			}
 			var command = getRunCommand(target);
 			if (command != null) readmeFile += '$command' + NEWLINE;
 			readmeFile += '```' + NEWLINE + NEWLINE;
-		}
-		
+		} 
 		
 		File.saveContent(outPath + "README.md", readmeFile);
+		log('[created] README.md');
 	}
 	
 	private function createBinPath() {
 		FileSystem.createDirectory(outPath + binPath);
-		for (target in targets) switch(target) {
+		for (target in targets) switch target {
 			case "js": 
 				// copy index.html
 				File.saveContent(outPath + binPath + "index.html", replaceVars(File.getContent(Sys.getCwd() + '/template/bin/index.html')));
 			default: 
 		}
+		log('[created] bin path: $outPath$binPath');
 	}
 	
 	private function replaceVars(value:String) {
@@ -350,6 +459,7 @@ class Project
 		} else {
 			FileSystem.createDirectory(outPath + srcPath);
 		}
+		log('[created] package: $classPath');
 	}
 	
 	private function createBuildFiles() {
@@ -369,24 +479,19 @@ class Project
 		hxml += '-cp $srcPath' + NEWLINE;
 		for(cp in classPaths) hxml += '-cp $cp' + NEWLINE;
 		
-		var actualTarget = switch(target) {
+		var actualTarget = switch target {
 			case "nodejs": "js";
 			default: target;
 		}
 		hxml += '-$actualTarget ${getOutputPath(target)}' + NEWLINE;
 		
-		if (target == "nodejs") hxml += '-lib hxnodejs' + NEWLINE;
-		if (target == "java") hxml += '-lib hxjava' + NEWLINE;
-		if (target == "cpp") hxml += '-lib hxcpp' + NEWLINE;
-		if (target == "cs") hxml += '-lib hxcs' + NEWLINE;
-		
 		if (libs.length > 0) for (lib in libs) hxml += '-lib $lib' + NEWLINE;
 		
 		File.saveContent(outPath + file, hxml);
+		log('[created] build file: $file');
 	}
 	
 	private function createRunFiles() {
-		trace(targets, targets.length);
 		if (targets.length > 0) {
 			if (targets.length == 1) {
 				createRunFile(targets[0], 'run.hxml');
@@ -399,7 +504,7 @@ class Project
 	}
 	
 	private function getOutputPath(target:String) {
-		var extension = switch(target) {
+		var extension = switch target {
 			case "js","nodejs": ".js";
 			case "cs": "/bin/Main.exe";
 			case "python": ".py";
@@ -419,16 +524,17 @@ class Project
 		if (command != null) {
 			hxml += '-cmd $command' + NEWLINE;
 			File.saveContent(outPath + file, hxml);
+			log('[created] run file: $file');
 		}
 	}
 	
 	private function getRunCommand(target:String) {
 		var outputPath = getOutputPath(target);
-		return switch(target) {
+		return switch target {
 			case "nodejs": 'node $outputPath';
 			case "python": 'python $outputPath';
 			case "swf": 'run $outputPath';
-			case "neko": 'neko $outputPath';
+			case "neko": (doUseLix ? 'npm run ' : '') + 'neko $outputPath';
 			case "hl": 'hl $outputPath';
 			case "php": 'php $outputPath';
 			case "java": 'java -jar $outputPath';
@@ -453,6 +559,24 @@ class Project
 					}
 				}
 			}
-		} catch (e:Dynamic) trace('Failed to include "$dir"');
+		} catch (e:Dynamic) log('Failed to include "$dir"');
 	}
+	
+	private inline function log(message:Message) {
+		Sys.println(message.toString());
+	}
+}
+
+abstract Message(String) {
+	public inline function new(msg:String) this = msg;
+	
+	@:from public inline static function fromArray(arr:Array<Any>) {
+		return new Message(arr.map(Std.string).join(", "));
+	}
+	
+	@:from public inline static function fromString(msg:String) {
+		return new Message(msg);
+	}
+	
+	public inline function toString() return this;
 }

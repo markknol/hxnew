@@ -36,6 +36,23 @@ script:
   - haxe build-nodejs.hxml
   - haxe run-nodejs.hxml
   - cd ../
+  - haxelib run hxnew -name MyProject4 -pack com.website --lix
+  - cd MyProject4/
+  - haxe build.hxml
+  - cd ../
+  - haxelib run hxnew -name test.MyProject5 -target neko --lix
+  - cd test.MyProject5/
+  - haxe build.hxml
+  - haxe run.hxml
+  - cd ../
+  - haxelib run hxnew -name MyProject6 -target neko,nodejs -lib format --lix
+  - cd MyProject6/
+  - haxe install.hxml
+  - haxe build-neko.hxml
+  - haxe run-neko.hxml
+  - haxe build-nodejs.hxml
+  - haxe run-nodejs.hxml
+  - cd ../
 
 notifications:
   email: false
