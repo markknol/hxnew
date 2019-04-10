@@ -38,20 +38,19 @@ script:
   - cd ../
   - haxelib run hxnew -name MyProject4 -pack com.website --lix
   - cd MyProject4/
-  - haxe build.hxml
+  - npm run haxe build.hxml
   - cd ../
   - haxelib run hxnew -name test.MyProject5 -target neko --lix
   - cd test.MyProject5/
-  - haxe build.hxml
-  - haxe run.hxml
+  - npm run haxe build.hxml
+  - npm run haxe run.hxml
   - cd ../
   - haxelib run hxnew -name MyProject6 -target neko,nodejs -lib format --lix
   - cd MyProject6/
-  - haxe install.hxml
-  - haxe build-neko.hxml
-  - haxe run-neko.hxml
-  - haxe build-nodejs.hxml
-  - haxe run-nodejs.hxml
+  - npm run haxe build-neko.hxml
+  - npm run haxe run-neko.hxml
+  - npm run haxe build-nodejs.hxml
+  - npm run haxe run-nodejs.hxml
   - cd ../
 
 notifications:
