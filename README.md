@@ -74,14 +74,16 @@ MyProject/MyProject.hxproj
 [-src] <path>            : Class path source folder. default: 'src'
 [-cp] <path>             : Additional class path
 [-bin] <path>            : Output folder. default: 'bin'
-[-lib] <lib>             : Libs used in the project, comma separate
-[-target | -t] <targets> : Target languages, comma separate. Default: 'js'
+[-lib | -libs] <libs>    : Libs used in the project, comma separate
+[-target | -t] <targets> : Target languages, comma separate. Or "all" for all targets. Default: 'js'
 [-pack] <classPath>      : Package of the entry point
-[--no-main]              : Don't generate a Main.hx file
-[--no-makefile]          : Don't generate a makefile
-[--no-gitignore]         : Don't generate .gitignore
-[--no-readme]            : Don't generate README.md
+[--lix]                  : Use Lix.pm. Assumes global available `npm` command
+[--makefile]             : Generate a makefile
 [--no-haxedevelop]       : Don't generate HaxeDevelop project files
-[--no-travis]            : Don't generate Travis files
+[--no-main]              : Don't generate a Main.hx file
+[--no-readme]            : Don't generate README.md
+[--no-gitignore]         : Don't generate .gitignore
 [--no-haxelib-json]      : Don't generate a haxelib.json
+[--no-travis]            : Don't generate Travis files
+[--version | -v]         : Log version
 ```
