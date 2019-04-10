@@ -4,7 +4,7 @@
 [![Haxelib Version](https://img.shields.io/github/tag/markknol/hxnew.svg?label=haxelib)](http://lib.haxe.org/p/hxnew)
 
 > Create new Haxe projects in a blast!  
-> This tool is meant to create an plain Haxe project. Run it once.
+> This tool is meant to create a plain Haxe project. Run it once.
 
 ## Installation
 
