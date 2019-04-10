@@ -83,6 +83,8 @@ class Main {
 				if (!FileSystem.exists(value)) {
 					Sys.println('[error] Invalid command "$value"');
 					doGenerate = false;
+				} else {
+					project.curPath = value;
 				}
 			}
 		]);
@@ -110,8 +112,9 @@ class Project {
 	public var name:String;
 	public var binPath:String = "bin";
 	public var srcPath:String = "src";
-	public var curPath:String = Sys.getCwd();
 	public var classPath:String = "";
+	
+	public var curPath:String = "";
 	public var outPath:String;
 	
 	public var doCreateMainClass:Bool = true;
@@ -141,7 +144,6 @@ class Project {
 		if (!outPath.endsWith("/")) outPath += "/";
 		if (!binPath.endsWith("/")) binPath += "/";
 		if (!srcPath.endsWith("/")) srcPath += "/";
-		if (!curPath.endsWith("/")) curPath += "/";
 		
 		if (targets.length == 0) targets.push(DEFAULT_TARGET);
 		
@@ -449,7 +451,6 @@ class Project {
 			.replace("$outPath", outPath)
 			.replace("$binPath", binPath)
 			.replace("$srcPath", srcPath)
-			.replace("$curPath", curPath)
 			.replace("$classPath", classPath)
 			.replace("$name", name);
 	}
