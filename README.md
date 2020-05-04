@@ -35,7 +35,7 @@ MyProject/MyProject.hxproj
 
 #### `haxelib run hxnew -name MyProject -pack com.company.tool`
 
-This will create a js project with same directory structure as above but the Main class located in the com.mediamonks.tool package. 
+This will create a js project with same directory structure as above but the Main class located in the com.company.tool package. 
 
 ```
 MyProject/src/com/company/tool/Main.hx
