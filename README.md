@@ -61,6 +61,11 @@ MyProject/run-nodejs.hxml
 MyProject/release_haxelib.sh
 MyProject/MyProject.hxproj
 ```
+
+#### `haxelib run hxnew -name MyProject --lix`
+
+This will create a [lix.pm](https://github.com/lix-pm/lix.client) project. It creates a package.json and requires all libraries using lix!
+
 > Notes:
 > * When providing a lib, an install.hxml is created. Run this to install the project dependencies.
 > * The run files start the process to run the code
