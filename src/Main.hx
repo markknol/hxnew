@@ -479,6 +479,8 @@ class Project {
 		var hxml = '';
 		var pack = classPath != "" ? classPath + "." : "";
 		if (doCreateMainClass) hxml += '-main ${pack}Main' + NEWLINE;
+		hxml += '-dce full' + NEWLINE;
+		hxml += '-D analyzer-optimize' + NEWLINE;
 		hxml += '-cp $srcPath' + NEWLINE;
 		for(cp in classPaths) hxml += '-cp $cp' + NEWLINE;
 		
