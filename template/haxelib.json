@@ -5,7 +5,7 @@
   "tags": [$tags],
   "description": "description of $name",
   "classPath": "src",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "releasenote": "Initial release",
   "contributors": ["YOUR_NAME"],
   "dependencies": {
