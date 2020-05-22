@@ -5,7 +5,7 @@
   "tags": ["cross", "haxe"],
   "description": "Create new Haxe projects in a blast!",
   "version": "1.0.1",
-  "releasenote": "Support lix projects. Tool version can be logged. Project name validation. More logging, better argument error handling. Disallow generate new project in existing folder. Don't generate makefile by default. ",
+  "releasenote": "Use optimized build.hxml files.",
   "contributors": ["markknol"],
   "dependencies": {
     "hxargs": ""
