@@ -1,12 +1,13 @@
-sudo: required
+sudo: false
 dist: trusty
 
 language: haxe
-
+node_js:
+  - 12
+  
 haxe:
-  - "3.4.0"
-  - "3.4.4"
   - "3.4.7"
+  - "4.1.0"
   - "development"
 
 matrix:
@@ -58,7 +59,7 @@ notifications:
 
 deploy:
   - provider: script
-    haxe: 3.4.7
+    haxe: 4.1.0
     script: bash ./release_haxelib.sh $HAXELIB_PWD
     on:
       tags: true
